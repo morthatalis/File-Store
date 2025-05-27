@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>File Portal</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body {
+      margin: 0; background: #f9fafb; display: flex; flex-direction: column;
+      align-items: center; height: 100vh; overflow: hidden;
+    }
+    .upload-section {
+      width: 100%; padding: 2rem; background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);  z-index: 1;
+    }
+    .upload-section h1 { margin: 0 0 1rem; }
+    button {
+      background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none;
+      border-radius: 5px; cursor: pointer; margin-top: 0.5rem;
+    }
+    button:hover { background: #2563eb; }
+    #linkContainer { margin-top: 1rem; }
+    .download-section {
+      flex: 1; width: 100%;  overflow-y: auto;
+      padding: 1rem 2rem; background: #fff;
+      border-top: 1px solid #e5e7eb;
+    }
+    .download-section h2 { margin-top: 0; }
+    #fileList { list-style: none; padding: 0; margin-top: 1rem; }
+    #fileList li {
+      padding: 0.5rem 0; border-bottom: 1px solid #eee;
+    }
+    #fileList a {
+      color: #3b82f6; text-decoration: none;
+    }
+    #fileList a:hover { text-decoration: underline; }
+    .preview {
+      margin-top: 0.5rem; max-width: 100%;
+    }
+    input[type="text"] {
+      width: 100%; padding: 0.5rem; margin-top: 1rem;
+      border: 1px solid #ccc; border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="upload-section">
+    <h1>Upload a File</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="file" required />
+      <br />
+      <button type="submit">Upload</button>
+    </form>
+    <div id="linkContainer"></div>
+
+    <input type="text" id="searchCode" placeholder="Search by unique code..." />
+  </div>
+
+  <div class="download-section">
+    <h2>Available Files</h2>
+    <ul id="fileList"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const linkContainer = document.getElementById('linkContainer');
+    const fileList = document.getElementById('fileList');
+    const searchCode = document.getElementById('searchCode');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const res = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        linkContainer.innerHTML = `
+          <p>✅ Uploaded: 
+            <a href="${data.path}" download>${data.filename}</a><br>
+            Code: <strong>${data.code}</strong> | Type: ${data.type}
+          </p>
+        `;
+        form.reset();
+        loadFiles();
+      } else {
+        linkContainer.innerHTML = `<p style="color:red;">❌ Upload failed.</p>`;
+      }
+    });
+
+    async function loadFiles(filterCode = '') {
+      const res = await fetch('/files');
+      const files = await res.json();
+      fileList.innerHTML = '';
+
+      const filtered = filterCode
+        ? files.filter(f => f.code.toLowerCase().includes(filterCode.toLowerCase()))
+        : files;
+
+      if (filtered.length === 0) {
+        fileList.innerHTML = '<li>No matching files found.</li>';
+      }
+
+      filtered.forEach(file => {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = `/uploads/${file.name}`;
+        link.textContent = `${file.name}`;
+        link.download = file.name;
+        li.innerHTML = `
+          🔑 <strong>${file.code}</strong> | 📄 ${file.type}<br/>
+        `;
+        li.appendChild(link);
+
+        // Preview for images and text
+        const ext = file.type.toLowerCase();
+        if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
+          const img = document.createElement('img');
+          img.src = `/uploads/${file.name}`;
+          img.className = 'preview';
+          img.alt = file.name;
+          li.appendChild(img);
+        } else if (['txt', 'md', 'json', 'html', 'csv'].includes(ext)) {
+          fetch(`/uploads/${file.name}`)
+            .then(r => r.text())
+            .then(text => {
+              const pre = document.createElement('pre');
+              pre.className = 'preview';
+              pre.textContent = text.slice(0, 300); // preview first 300 chars
+              li.appendChild(pre);
+            });
+        }
+
+        fileList.appendChild(li);
+      });
+    }
+
+    searchCode.addEventListener('input', () => {
+      loadFiles(searchCode.value);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadFiles();
+    });
+  </script>
+
+</body>
+</html>
