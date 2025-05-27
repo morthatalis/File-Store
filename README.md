@@ -8,13 +8,11 @@ anyways, dont use this for top secret information because this aint secure.
 dont sue me if your instance somehow gets hacked.
 # instructions on how to install & run
 nodejs and npm cuz idc about anything else.
-1. open your terminal and type in (multer itself doesnt work for me. but if you care too much, try to use multer directly):
+1. open your terminal and type in:
 ```
 git clone https://github.com/morthatalis/File-Store/ File-Store
 cd File-Store  
-npm init -y
-npm install express
-npm install multer@1.4.5-lts.1
+npm install
 ```
 
 run:
