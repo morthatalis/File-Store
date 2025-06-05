@@ -8,12 +8,19 @@ anyways, dont use this for top secret information because this aint secure.
 dont sue me if your instance somehow gets hacked.
 # instructions on how to install & run
 nodejs and npm cuz idc about anything else.
-1. open your terminal and type in:
+### clone and install packages and also running it
+open your terminal and type in:
 ```
 git clone https://github.com/morthatalis/File-Store/ File-Store
 cd File-Store  
 npm install
 ```
 
-run:
+to start the server type in:
+
 ```node server.js```
+that's actually everything!
+
+if you use a server hoster like render or vercel then
+you have to manually figure out database, use mongodb or something.
+you gotta fork this if you wanna do database. cuz otherwise you cant,
