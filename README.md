@@ -19,8 +19,8 @@ npm install
 to start the server type in:
 
 ```node server.js```
-that's actually everything!
 
+that's actually everything!
 if you use a server hoster like render or vercel then
 you have to manually figure out database, use mongodb or something.
 you gotta fork this if you wanna do database. cuz otherwise you cant,
